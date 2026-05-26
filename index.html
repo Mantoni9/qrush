@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sind wir ein Match?</title>
+<meta name="description" content="Mach den Check – sind wir ein Match?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* =================================================================
+     KONFIG – hier kannst du die wichtigsten Sachen schnell ändern.
+     (Die Personen-Daten + Schwellen stehen weiter unten im <script>.)
+     ================================================================= */
+  :root{
+    --bg:#FFF6F2;
+    --bg2:#FFE9EC;
+    --card:#FFFFFF;
+    --ink:#2B1B22;
+    --ink-soft:#7A6A70;
+    --line:#F1E2DD;
+    --accent:#FF5864;      /* Tinder-Coral */
+    --accent2:#FF8A5B;     /* Tangerine     */
+    --accent-ink:#FFFFFF;
+    --good:#19C37D;
+    --shadow:0 18px 50px -18px rgba(255,88,100,.45);
+    --shadow-soft:0 10px 30px -12px rgba(43,27,34,.18);
+    --grad:linear-gradient(135deg,var(--accent),var(--accent2));
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 80% -10%, var(--bg2) 0%, transparent 55%),
+      radial-gradient(120% 90% at -10% 110%, #FFE3D6 0%, transparent 55%),
+      var(--bg);
+    min-height:100dvh;
+    display:flex;flex-direction:column;align-items:center;
+    overflow-x:hidden;
+  }
+  .wrap{
+    width:100%;max-width:480px;min-height:100dvh;
+    display:flex;flex-direction:column;
+    padding:14px 18px 0;position:relative;
+  }
+
+  /* ---- Topbar ---- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 4px}
+  .brand{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--grad);box-shadow:0 0 0 4px rgba(255,88,100,.15)}
+  .langs{display:flex;gap:5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px}
+  .langs button{
+    border:0;background:transparent;cursor:pointer;font:inherit;font-weight:700;font-size:12px;
+    color:var(--ink-soft);padding:5px 9px;border-radius:999px;transition:.18s;
+  }
+  .langs button.active{background:var(--grad);color:#fff;box-shadow:0 4px 12px -4px var(--accent)}
+
+  /* ---- Screens ---- */
+  .screen{flex:1;display:none;flex-direction:column;animation:fade .35s ease both}
+  .screen.show{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .center{justify-content:center;text-align:center;gap:18px;padding-bottom:40px}
+
+  .hero-emoji{font-size:64px;line-height:1;filter:drop-shadow(0 10px 18px rgba(255,88,100,.3));animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes pop{from{transform:scale(.3) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+  h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.02;letter-spacing:-.03em;margin:0}
+  h1 .em{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--ink-soft);font-size:15.5px;line-height:1.5;margin:0 auto;max-width:330px}
+  .name-pill{display:inline-flex;align-items:center;gap:8px;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;box-shadow:var(--shadow-soft);font-size:15px}
+  .name-pill .av{width:22px;height:22px;border-radius:50%;background:var(--grad)}
+
+  /* ---- Buttons ---- */
+  .btn{
+    border:0;cursor:pointer;font:inherit;font-weight:700;font-size:16.5px;
+    padding:17px 22px;border-radius:18px;width:100%;
+    background:var(--grad);color:#fff;box-shadow:var(--shadow);
+    transition:transform .12s ease, box-shadow .2s ease;
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow-soft)}
+  .btn.ig{background:linear-gradient(120deg,#F58529,#DD2A7B 45%,#8134AF 75%,#515BD4)}
+
+  /* ---- Question screen ---- */
+  .qhead{padding:8px 0 14px}
+  .progress{height:9px;background:#fff;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;width:0;background:var(--grad);border-radius:999px;transition:width .4s cubic-bezier(.4,1,.4,1)}
+  .counter{font-size:12.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;margin-top:9px;text-transform:uppercase}
+
+  .qcard{
+    background:var(--card);border:1px solid var(--line);border-radius:26px;
+    box-shadow:var(--shadow-soft);padding:22px 18px;margin-bottom:14px;
+    flex:1;display:flex;flex-direction:column;
+    animation:cardin .38s cubic-bezier(.2,1,.3,1) both;
+  }
+  @keyframes cardin{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  .q{font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;line-height:1.22;letter-spacing:-.02em;margin:4px 0 18px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{
+    text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:16px;
+    padding:15px 16px;cursor:pointer;font:inherit;font-size:15.5px;font-weight:600;color:var(--ink);
+    display:flex;align-items:center;gap:13px;transition:.16s;line-height:1.35;
+  }
+  .opt:active{transform:scale(.985)}
+  .opt .key{
+    flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-weight:800;font-size:13px;background:var(--bg2);color:var(--accent);transition:.16s;
+  }
+  .opt.sel{border-color:transparent;background:var(--grad);color:#fff;box-shadow:var(--shadow)}
+  .opt.sel .key{background:rgba(255,255,255,.25);color:#fff}
+
+  /* ---- Result ---- */
+  .score-ring{width:118px;height:118px;margin:0 auto;position:relative}
+  .score-ring svg{transform:rotate(-90deg)}
+  .score-ring .val{position:absolute;inset:0;display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:30px}
+  .ig-row{font-size:13px;color:var(--ink-soft)}
+
+  .foot{padding:16px 0 18px;text-align:center;font-size:11.5px;color:var(--ink-soft);opacity:.8;line-height:1.5}
+  .foot b{color:var(--ink);font-weight:700}
+
+  /* ---- Confetti ---- */
+  #confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+  .conf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;will-change:transform,opacity;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(102vh) rotate(620deg);opacity:.9}}
+
+  .stack{display:flex;flex-direction:column;gap:11px;width:100%}
+  .multi-hint{font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin:-8px 0 14px;display:flex;align-items:center;gap:6px}
+  .multi-hint::before{content:"✓✓"}
+  .btn.disabled{opacity:.4;pointer-events:none;box-shadow:none;filter:saturate(.4)}
+  .ig-ico{flex:none}
+  /* Processing / Spannungs-Loader */
+  .loader{position:relative;width:124px;height:124px;margin:0 auto 6px}
+  .loader-ring{position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,var(--accent),var(--accent2),#FFD166,var(--accent));
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+            mask:radial-gradient(farthest-side,transparent calc(100% - 12px),#000 calc(100% - 11px));
+    animation:spin 1.05s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loader-heart{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;animation:beat 1.05s ease-in-out infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+  .proc-text{min-height:1.6em;font-family:'Bricolage Grotesque';font-weight:600;font-size:18px;color:var(--ink-soft);opacity:0;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease;max-width:300px;margin:0 auto}
+  .proc-text.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div id="confetti"></div>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand"><span class="dot"></span><span data-i="brand">Sind wir ein Match?</span></div>
+    <div class="langs" id="langs">
+      <button data-lang="de">DE</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="es">ES</button>
+    </div>
+  </div>
+
+  <!-- START -->
+  <section id="s-start" class="screen center show">
+    <div class="hero-emoji">💘</div>
+    <h1 data-i="startTitle"></h1>
+    <p class="lead" data-i="startLead"></p>
+    <div class="name-pill"><span class="av"></span><span id="start-name"></span></div>
+    <div class="stack" style="margin-top:6px">
+      <button class="btn" id="go" data-i="startBtn"></button>
+    </div>
+  </section>
+
+  <!-- CHOOSER (falls kein/falscher ?p= Parameter) -->
+  <section id="s-choose" class="screen center">
+    <div class="hero-emoji">🎯</div>
+    <h1 data-i="chooseTitle"></h1>
+    <p class="lead" data-i="chooseLead"></p>
+    <div class="stack" id="choose-list"></div>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section id="s-quiz" class="screen">
+    <div class="qhead">
+      <div class="progress"><i id="bar"></i></div>
+      <div class="counter" id="counter"></div>
+    </div>
+    <div id="qmount"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="s-result" class="screen center"></section>
+
+  <!-- PROCESSING (Spannungsaufbau zwischen letzter Frage und Ergebnis) -->
+  <section id="s-processing" class="screen center">
+    <div class="loader"><div class="loader-ring"></div><div class="loader-heart">💘</div></div>
+    <p class="proc-text" id="proc-text"></p>
+  </section>
+
+  <!-- NO QR (Produktion, falls jemand ohne ?p= reinkommt) -->
+  <section id="s-noqr" class="screen center">
+    <div class="hero-emoji">📲</div>
+    <h1 data-i="noqrTitle"></h1>
+    <p class="lead" data-i="noqrLead"></p>
+  </section>
+
+  <div class="foot">
+    <span data-i="madeBy"></span><br><b>MB Digital Solutions – Markic &amp; Bolz GbR</b>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   1) PERSONEN-DATEN
+   -------------------------------------------------------------------
+   - threshold: Match-Schwelle (0.7 = 70%). >>> HIER ändern <<<
+   - instagram: voller Profil-Link
+   - correct:  Liste der richtigen Antwort-IDs.
+               Mehrere = großzügig: jede davon zählt als Treffer.
+   =================================================================== */
+const PEOPLE = {
+
+  /* ---------------------------- NOELLE ---------------------------- */
+  noelle:{
+    name:"Noelle",
+    instagram:"https://www.instagram.com/noellexme",
+    threshold:0.7,                       // <<< Match-Schwelle Noelle
+    q:[
+      {correct:["D"],
+        t:{de:"Wie wahrscheinlich ist es, dass du mit mir spontan Flüge buchst?",
+           en:"How likely are you to book spontaneous flights with me?",
+           es:"¿Qué probabilidad hay de que reserves vuelos espontáneos conmigo?"},
+        o:[["A",{de:"Nur mit Planung",en:"Only with a plan",es:"Solo con plan"}],
+           ["B",{de:"Wenn der Preis gut ist",en:"If the price is right",es:"Si el precio está bien"}],
+           ["C",{de:"„Scheiß drauf, wir leben nur einmal“",en:"“Screw it, we only live once”",es:"“Qué más da, solo se vive una vez”"}],
+           ["D",{de:"Ich hab schon gepackt",en:"I've already packed",es:"Ya hice la maleta"}]]},
+      {correct:["B"],
+        t:{de:"Wie wahrscheinlich ist es, dass du „nur kurz“ feiern gehst und erst morgens heimkommst?",
+           en:"How likely is it you go out “just for a bit” and come home in the morning?",
+           es:"¿Qué probabilidad hay de que salgas “solo un rato” y vuelvas por la mañana?"},
+        o:[["A",{de:"100 %",en:"100%",es:"100%"}],
+           ["B",{de:"Passiert schneller als gedacht",en:"Happens faster than you'd think",es:"Pasa más rápido de lo que crees"}],
+           ["C",{de:"Kommt auf die Musik an",en:"Depends on the music",es:"Depende de la música"}],
+           ["D",{de:"Nicht sehr hoch",en:"Not very likely",es:"Poco probable"}]]},
+      {correct:["D"],
+        t:{de:"Wie reagierst du, wenn ich sage „warte, ich kenn den Weg“?",
+           en:"How do you react when I say “wait, I know the way”?",
+           es:"¿Cómo reaccionas si digo “espera, yo sé el camino”?"},
+        o:[["A",{de:"Ich folge blind",en:"I follow blindly",es:"Te sigo a ciegas"}],
+           ["B",{de:"Ich bin leicht nervös",en:"I get a little nervous",es:"Me pongo algo nervioso/a"}],
+           ["C",{de:"Ich fange an zu diskutieren",en:"I start arguing",es:"Empiezo a discutir"}],
+           ["D",{de:"Ich nicke freundlich und öffne heimlich Google Maps",en:"I nod nicely and secretly open Google Maps",es:"Asiento amable y abro Google Maps a escondidas"}]]},
+      {correct:["D"],
+        t:{de:"Was macht einen Abend wirklich gut?",
+           en:"What makes an evening truly great?",
+           es:"¿Qué hace que una noche sea realmente buena?"},
+        o:[["A",{de:"Gute Gespräche",en:"Good conversations",es:"Buenas conversaciones"}],
+           ["B",{de:"Gute Musik",en:"Good music",es:"Buena música"}],
+           ["C",{de:"Die richtigen Leute",en:"The right people",es:"La gente adecuada"}],
+           ["D",{de:"Wenn man am Ende komplett das Zeitgefühl verloren hat",en:"When you completely lose track of time",es:"Cuando pierdes por completo la noción del tiempo"}]]},
+      {correct:["C"],
+        t:{de:"Wie sieht für dich der perfekte Urlaub aus?",
+           en:"What does your perfect holiday look like?",
+           es:"¿Cómo es tus vacaciones perfectas?"},
+        o:[["A",{de:"Alles durchgeplant mit Sehenswürdigkeiten",en:"Fully planned with sightseeing",es:"Todo planeado, con turismo"}],
+           ["B",{de:"Nur entspannen, All Inclusive, nichts tun",en:"Just relax, all-inclusive, do nothing",es:"Solo relajarse, todo incluido, no hacer nada"}],
+           ["C",{de:"Mix aus Abenteuer, Gegend entdecken und mal den ganzen Tag am Strand",en:"A mix of adventure, exploring and full beach days",es:"Mezcla de aventura, explorar y días enteros de playa"}],
+           ["D",{de:"Hauptsache viel feiern gehen",en:"As long as there's lots of partying",es:"Lo importante es salir de fiesta"}]]},
+      {correct:["A"],
+        t:{de:"Wie reagierst du, wenn ich dich aus Spaß beleidige?",
+           en:"How do you react if I tease/insult you for fun?",
+           es:"¿Cómo reaccionas si te insulto en broma?"},
+        o:[["A",{de:"Ich hab schon den perfekten Konter",en:"I've already got the perfect comeback",es:"Ya tengo la respuesta perfecta"}],
+           ["B",{de:"Ich bin verwirrt",en:"I'm confused",es:"Me quedo confundido/a"}],
+           ["C",{de:"Ich ignoriere es",en:"I ignore it",es:"Lo ignoro"}],
+           ["D",{de:"Ich gehe",en:"I leave",es:"Me voy"}]]},
+      {correct:["D"],
+        t:{de:"Welche dieser Künstler würdest du am ehesten hören?",
+           en:"Which of these artists would you most likely listen to?",
+           es:"¿A cuál de estos artistas escucharías más bien?"},
+        o:[["A",{de:"Mia Julia",en:"Mia Julia",es:"Mia Julia"}],
+           ["B",{de:"RAF Camora",en:"RAF Camora",es:"RAF Camora"}],
+           ["C",{de:"Taylor Swift",en:"Taylor Swift",es:"Taylor Swift"}],
+           ["D",{de:"Bring Me The Horizon",en:"Bring Me The Horizon",es:"Bring Me The Horizon"}]]},
+      {correct:["C"],
+        t:{de:"Wie sähe dein Plan für die nächsten Jahre aus?",
+           en:"What's your plan for the next few years?",
+           es:"¿Cuál sería tu plan para los próximos años?"},
+        o:[["A",{de:"Stabilität und Wurzeln schlagen",en:"Stability and putting down roots",es:"Estabilidad y echar raíces"}],
+           ["B",{de:"Familie gründen und sesshaft werden",en:"Start a family and settle down",es:"Formar una familia y asentarse"}],
+           ["C",{de:"Leben in einem anderen Land",en:"Living in another country",es:"Vivir en otro país"}],
+           ["D",{de:"Karriere voll angehen",en:"Go all in on my career",es:"Apostar todo por la carrera"}]]},
+      {correct:["B"],
+        t:{de:"Kennst du Desmond den Mondbär?",
+           en:"Do you know Desmond the Moon Bear?",
+           es:"¿Conoces a Desmond el oso lunar?"},
+        o:[["A",{de:"Wer ist Desmond?",en:"Who is Desmond?",es:"¿Quién es Desmond?"}],
+           ["B",{de:"Wie bin ich hierher gekommen?",en:"How did I get here?",es:"¿Cómo llegué hasta aquí?"}],
+           ["C",{de:"Na klar!",en:"Of course!",es:"¡Claro!"}],
+           ["D",{de:"Was ist ein Mondbär?",en:"What's a moon bear?",es:"¿Qué es un oso lunar?"}]]},
+      {correct:["A","C"], multi:true,   // Noelle: A und C – Mehrfachauswahl
+        t:{de:"Wie sieht der perfekte entspannte Abend aus?",
+           en:"What does the perfect chill evening look like?",
+           es:"¿Cómo es la noche tranquila perfecta?"},
+        o:[["A",{de:"Auf der Couch bei Serien/Animes/Filmen zusammen verwahrlosen",en:"Slobbing out on the couch with series/anime/movies together",es:"Tirados en el sofá con series/anime/pelis"}],
+           ["B",{de:"Zusammen kochen und gemütlich essen",en:"Cooking together and a cosy dinner",es:"Cocinar juntos y cenar tranquis"}],
+           ["C",{de:"Sonnenuntergang/Sterne gucken mit Sushi und kalter Paulaner Spezi",en:"Sunset/stargazing with sushi and a cold Spezi",es:"Atardecer/estrellas con sushi y un refresco frío"}],
+           ["D",{de:"Gym und danach zusammen in die Sauna",en:"Gym and then the sauna together",es:"Gym y luego sauna juntos"}]]},
+      {correct:["A"],
+        t:{de:"Über welches Geschenk freust du dich am meisten?",
+           en:"Which gift makes you happiest?",
+           es:"¿Qué regalo te hace más feliz?"},
+        o:[["A",{de:"Konzerttickets",en:"Concert tickets",es:"Entradas para un concierto"}],
+           ["B",{de:"Parfüm",en:"Perfume",es:"Perfume"}],
+           ["C",{de:"Essen gehen",en:"Going out to eat",es:"Salir a comer"}],
+           ["D",{de:"Armband",en:"A bracelet",es:"Una pulsera"}]]}
+    ]
+  },
+
+  /* ---------------------------- LOUISA (Lulu) --------------------- */
+  louisa:{
+    name:"Lulu",                         // Anzeigename
+    instagram:"https://www.instagram.com/louisa_keh",
+    threshold:0.7,                       // <<< Match-Schwelle Louisa
+    q:[
+      {correct:["B"],
+        t:{de:"Wie wahrscheinlich ist es, dass du „nur kurz“ feiern gehst und erst morgens heimkommst?",
+           en:"How likely is it you go out “just for a bit” and come home in the morning?",
+           es:"¿Qué probabilidad hay de que salgas “solo un rato” y vuelvas por la mañana?"},
+        o:[["A",{de:"100 %",en:"100%",es:"100%"}],
+           ["B",{de:"Passiert schneller als gedacht",en:"Happens faster than you'd think",es:"Pasa más rápido de lo que crees"}],
+           ["C",{de:"Kommt auf die Musik an",en:"Depends on the music",es:"Depende de la música"}],
+           ["D",{de:"Ich leugne alles",en:"I deny everything",es:"Lo niego todo"}]]},
+      {correct:["A"],
+        t:{de:"Welche Rolle hast du in deiner Freundesgruppe auf Malle?",
+           en:"What's your role in your friend group on Mallorca?",
+           es:"¿Qué papel tienes en tu grupo de amigos en Mallorca?"},
+        o:[["A",{de:"Der/die Organisierte",en:"The organised one",es:"El/la organizado/a"}],
+           ["B",{de:"Der Chaot",en:"The chaotic one",es:"El/la caótico/a"}],
+           ["C",{de:"Der Animateur",en:"The entertainer",es:"El/la animador/a"}],
+           ["D",{de:"Der verlorene Sohn",en:"The lost one",es:"El/la perdido/a"}]]},
+      {correct:["B"],
+        t:{de:"Wie hoch ist die Wahrscheinlichkeit, dass wir mit dir eine lustige Story erleben?",
+           en:"How likely are we to end up with a funny story because of you?",
+           es:"¿Qué probabilidad hay de vivir una historia divertida contigo?"},
+        o:[["A",{de:"Sehr hoch",en:"Very high",es:"Muy alta"}],
+           ["B",{de:"Garantiert",en:"Guaranteed",es:"Garantizada"}],
+           ["C",{de:"Leider legendär hoch",en:"Sadly legendarily high",es:"Lamentablemente legendaria"}],
+           ["D",{de:"Ich BIN die Story",en:"I AM the story",es:"YO soy la historia"}]]},
+      {correct:["C"],
+        t:{de:"Wie sieht dein perfekter Malle-Tag aus?",
+           en:"What does your perfect Mallorca day look like?",
+           es:"¿Cómo es tu día perfecto en Mallorca?"},
+        o:[["A",{de:"Sonne, Drinks & gute Musik",en:"Sun, drinks & good music",es:"Sol, copas y buena música"}],
+           ["B",{de:"Erst Strand, dann Eskalation",en:"Beach first, then chaos",es:"Primero playa, luego desmadre"}],
+           ["C",{de:"Hauptsache mit den richtigen Leuten",en:"As long as it's with the right people",es:"Lo importante es la gente adecuada"}],
+           ["D",{de:"Ich nehme alles mit",en:"I do it all",es:"Me apunto a todo"}]]},
+      {correct:["D"],
+        t:{de:"Was tust du, wenn dein Gegenüber plötzlich mit fremder Perücke oder Cowboyhut auftaucht?",
+           en:"What do you do if the person opposite suddenly shows up in a random wig or cowboy hat?",
+           es:"¿Qué haces si la otra persona aparece con una peluca rara o un sombrero vaquero?"},
+        o:[["A",{de:"Feier ich komplett",en:"I love it completely",es:"Me encanta totalmente"}],
+           ["B",{de:"Ich suche direkt passende Accessoires",en:"I immediately find matching accessories",es:"Busco accesorios a juego enseguida"}],
+           ["C",{de:"Ich tue so, als wäre das normal",en:"I act like it's totally normal",es:"Actúo como si fuera normal"}],
+           ["D",{de:"Ich verliebe mich ein bisschen",en:"I fall in love a little",es:"Me enamoro un poquito"}]]},
+      {correct:["A"],
+        t:{de:"Wie würdest du dich selbst beschreiben?",
+           en:"How would you describe yourself?",
+           es:"¿Cómo te describirías?"},
+        o:[["A",{de:"Golden-Retriever-Energy",en:"Golden retriever energy",es:"Energía de golden retriever"}],
+           ["B",{de:"Gentleman mit Chaospotenzial",en:"Gentleman with chaos potential",es:"Caballero con potencial de caos"}],
+           ["C",{de:"Partyprinz",en:"Party prince",es:"Príncipe de la fiesta"}],
+           ["D",{de:"Emotional unavailable, aber süß",en:"Emotionally unavailable but cute",es:"Emocionalmente no disponible pero mono"}]]},
+      {correct:["A","B","C","D"], multi:true,   // Lulu: alle – Mehrfachauswahl
+        t:{de:"Was würdest du niemals auf Malle tun?",
+           en:"What would you never do on Mallorca?",
+           es:"¿Qué nunca harías en Mallorca?"},
+        o:[["A",{de:"Vor 12 schlafen",en:"Sleep before midnight",es:"Dormir antes de las 12"}],
+           ["B",{de:"Wasser statt Bier bestellen",en:"Order water instead of beer",es:"Pedir agua en vez de cerveza"}],
+           ["C",{de:"Ohne Sonnenbrille rausgehen",en:"Go out without sunglasses",es:"Salir sin gafas de sol"}],
+           ["D",{de:"Vernünftige Entscheidungen treffen",en:"Make sensible decisions",es:"Tomar decisiones sensatas"}]]},
+      {correct:["B"],
+        t:{de:"Was ist dein geheimer Superpower-Move nach einer langen Partynacht?",
+           en:"What's your secret superpower move after a long party night?",
+           es:"¿Cuál es tu movimiento secreto tras una larga noche de fiesta?"},
+        o:[["A",{de:"Stilles Wasser und ein Croissant",en:"Still water and a croissant",es:"Agua sin gas y un croissant"}],
+           ["B",{de:"Elektrolyte ballern wie ein Profi-Athlet",en:"Slamming electrolytes like a pro athlete",es:"Electrolitos a tope como un atleta pro"}],
+           ["C",{de:"Direkt wieder Aperol bestellen",en:"Order another Aperol right away",es:"Pedir otro Aperol de inmediato"}],
+           ["D",{de:"14 Stunden Winterschlaf",en:"14 hours of hibernation",es:"14 horas de hibernación"}]]},
+      {correct:["A"],
+        t:{de:"Was machst du, wenn deine Freunde verloren gehen?",
+           en:"What do you do when your friends get lost?",
+           es:"¿Qué haces cuando tus amigos se pierden?"},
+        o:[["A",{de:"Ich suche sie",en:"I go look for them",es:"Voy a buscarlos"}],
+           ["B",{de:"Ich warte am Essenstand",en:"I wait at the food stand",es:"Espero en el puesto de comida"}],
+           ["C",{de:"Ich gründe neue Freundschaften",en:"I make new friends",es:"Hago amigos nuevos"}],
+           ["D",{de:"Ich war wahrscheinlich zuerst weg",en:"I was probably the first to vanish",es:"Probablemente el primero en desaparecer"}]]},
+      {correct:["D"],
+        t:{de:"Wie würdest du dich in 3 Worten beschreiben?",
+           en:"How would you describe yourself in 3 words?",
+           es:"¿Cómo te describirías en 3 palabras?"},
+        o:[["A",{de:"Loyal, lustig, entspannt",en:"Loyal, funny, relaxed",es:"Leal, divertido, relajado"}],
+           ["B",{de:"Chaotisch, spontan, ehrlich",en:"Chaotic, spontaneous, honest",es:"Caótico, espontáneo, honesto"}],
+           ["C",{de:"Ehrgeizig, offen, verrückt",en:"Ambitious, open, crazy",es:"Ambicioso, abierto, loco"}],
+           ["D",{de:"Partyfest, humorvoll, liebevoll",en:"Party-proof, funny, loving",es:"Fiestero, gracioso, cariñoso"}]]}
+    ]
+  },
+
+  /* ---------------------------- LEONIE ---------------------------- */
+  leonie:{
+    name:"Leonie",
+    instagram:"https://www.instagram.com/_leoniedc",
+    threshold:0.7,                       // <<< Match-Schwelle Leonie
+    q:[
+      {correct:["B"],
+        t:{de:"Team Sonnenaufgang bewusst anschauen oder versehentlich erleben?",
+           en:"Team watch the sunrise on purpose, or accidentally experience it?",
+           es:"¿Ver el amanecer a propósito o vivirlo sin querer?"},
+        o:[["A",{de:"Bewusst anschauen – geplant und romantisch",en:"Watch it on purpose – planned and romantic",es:"Verlo a propósito, planeado y romántico"}],
+           ["B",{de:"Versehentlich erleben – man war einfach noch wach",en:"Experience it by accident – just still awake",es:"Vivirlo sin querer, simplemente seguías despierto"}]]},
+      {correct:["C"],
+        t:{de:"Was bekommt man mit dir?",
+           en:"What do you come with?",
+           es:"¿Qué obtienes contigo?"},
+        o:[["A",{de:"Gute Laune",en:"Good vibes",es:"Buen rollo"}],
+           ["B",{de:"Chaos",en:"Chaos",es:"Caos"}],
+           ["C",{de:"Beides",en:"Both",es:"Ambas cosas"}]]},
+      {correct:["C"],
+        t:{de:"Welcher Satz beschreibt dich am besten?",
+           en:"Which sentence describes you best?",
+           es:"¿Qué frase te describe mejor?"},
+        o:[["A",{de:"Ich wollte nur kurz bleiben und will eigentlich noch heimfahren",en:"I only meant to stay a bit and kind of want to go home already",es:"Solo iba a quedarme un rato y ya quiero irme a casa"}],
+           ["B",{de:"Herz aus Gold, Humor leicht fragwürdig",en:"Heart of gold, slightly questionable humour",es:"Corazón de oro, humor algo cuestionable"}],
+           ["C",{de:"Ich bin wie ein Sonntag: entspannt, aber manchmal überraschend abenteuerlustig",en:"I'm like a Sunday: relaxed, but sometimes surprisingly adventurous",es:"Soy como un domingo: tranquilo, pero a veces sorprendentemente aventurero"}],
+           ["D",{de:"Mein Leben nicht ganz im Griff, aber wenigstens gute Geschichten",en:"Not fully in control of my life, but at least good stories",es:"No controlo del todo mi vida, pero tengo buenas historias"}]]},
+      {correct:["A"],
+        t:{de:"Wie trinkst du deinen Kaffee – und was sagt das über dich aus?",
+           en:"How do you take your coffee – and what does it say about you?",
+           es:"¿Cómo tomas el café y qué dice eso de ti?"},
+        o:[["A",{de:"Meistens schwarz, ich bin zu faul für kompliziert",en:"Mostly black, too lazy for complicated",es:"Casi siempre solo, soy demasiado vago para complicaciones"}],
+           ["B",{de:"Stark, heiß, in Ruhe – ich muss morgens erst „Mensch“ werden",en:"Strong, hot, in peace – I need to become human first",es:"Fuerte, caliente y en paz: necesito volverme humano primero"}],
+           ["C",{de:"Chaotisch, meistens zu schnell und selten nur einen",en:"Chaotic, usually too fast and rarely just one",es:"Caótico, normalmente muy rápido y rara vez solo uno"}],
+           ["D",{de:"Ich trinke keinen Kaffee",en:"I don't drink coffee",es:"No tomo café"}]]},
+      {correct:["B"],
+        t:{de:"Wie viele Jahreszeiten gibt es für dich?",
+           en:"How many seasons are there for you?",
+           es:"¿Cuántas estaciones hay para ti?"},
+        o:[["A",{de:"4, ganz normal",en:"4, totally normal",es:"4, lo normal"}],
+           ["B",{de:"5 – mit Fasnacht",en:"5 – including carnival (Fasnacht)",es:"5 – con carnaval (Fasnacht)"}],
+           ["C",{de:"2 – Sommer und Winter",en:"2 – summer and winter",es:"2 – verano e invierno"}],
+           ["D",{de:"So viele, wie es Festival-Saisons gibt",en:"As many as there are festival seasons",es:"Tantas como temporadas de festivales"}]]},
+      {correct:["D"],
+        t:{de:"Wie sieht dein perfekter Getränkemoment aus?",
+           en:"What's your perfect drink moment?",
+           es:"¿Cuál es tu momento de bebida perfecto?"},
+        o:[["A",{de:"Kaffee in der Sonne, Aperol zum Sonnenuntergang, Bier mit den richtigen Leuten",en:"Coffee in the sun, Aperol at sunset, beer with the right people",es:"Café al sol, Aperol al atardecer, cerveza con la gente adecuada"}],
+           ["B",{de:"Gute Gespräche, entspannte Stimmung, irgendwas Kaltes in der Hand",en:"Good talks, chill mood, something cold in hand",es:"Buenas charlas, ambiente relajado, algo frío en la mano"}],
+           ["C",{de:"Sonne im Gesicht, kaltes Getränk, komplett planlos glücklich",en:"Sun on your face, cold drink, happily clueless",es:"Sol en la cara, bebida fría, feliz sin plan"}],
+           ["D",{de:"Nicht das Getränk zählt, sondern die Leute dabei",en:"It's not the drink that counts, it's the people",es:"No cuenta la bebida, sino la gente"}]]},
+      {correct:["A"],
+        t:{de:"Lieber peinlich lustig oder langweilig perfekt?",
+           en:"Rather embarrassingly funny or boringly perfect?",
+           es:"¿Vergonzosamente divertido o aburridamente perfecto?"},
+        o:[["A",{de:"Peinlich lustig",en:"Embarrassingly funny",es:"Vergonzosamente divertido"}],
+           ["B",{de:"Langweilig perfekt",en:"Boringly perfect",es:"Aburridamente perfecto"}]]},
+      {correct:["A"],
+        t:{de:"Wer bist du im Urlaub?",
+           en:"Who are you on holiday?",
+           es:"¿Quién eres de vacaciones?"},
+        o:[["A",{de:"Ich organisiere",en:"I organise",es:"Yo organizo"}],
+           ["B",{de:"Ich eskaliere",en:"I escalate",es:"Yo desmadro"}],
+           ["C",{de:"Ich gehe verloren",en:"I get lost",es:"Me pierdo"}],
+           ["D",{de:"Ich bin der Mitläufer",en:"I just tag along",es:"Solo voy con la corriente"}]]},
+      {correct:["B"],
+        t:{de:"Bist du eher Typ „Planer“ oder „mal schauen, was passiert“?",
+           en:"Are you more the “planner” or the “let's see what happens” type?",
+           es:"¿Eres más de “planear” o de “a ver qué pasa”?"},
+        o:[["A",{de:"Planer – alles im Griff",en:"Planner – everything under control",es:"Planificador – todo bajo control"}],
+           ["B",{de:"Mal schauen, was passiert",en:"Let's see what happens",es:"A ver qué pasa"}]]},
+      {correct:["B"],
+        t:{de:"Wenn du ein Tier wärst, welches beschreibt dich am besten?",
+           en:"If you were an animal, which fits you best?",
+           es:"Si fueras un animal, ¿cuál te describe mejor?"},
+        o:[["A",{de:"Capybara",en:"Capybara",es:"Capibara"}],
+           ["B",{de:"Kuh",en:"Cow",es:"Vaca"}],
+           ["C",{de:"Golden Retriever",en:"Golden retriever",es:"Golden retriever"}]]},
+      {correct:["C"],
+        t:{de:"Wie war nochmal mein Name?",
+           en:"What was my name again?",
+           es:"¿Cómo era mi nombre otra vez?"},
+        o:[["A",{de:"Noelle",en:"Noelle",es:"Noelle"}],
+           ["B",{de:"Louisa",en:"Louisa",es:"Louisa"}],
+           ["C",{de:"Leonie",en:"Leonie",es:"Leonie"}],
+           ["D",{de:"Isabell",en:"Isabell",es:"Isabell"}]]}
+    ]
+  }
+};
+
+/* Aliase für die URL (?p=...) */
+const ALIASES = { lulu:"louisa", noelle:"noelle", louisa:"louisa", leonie:"leonie" };
+
+/* ===================================================================
+   2) UI-TEXTE (DE / EN / ES)
+   =================================================================== */
+const I18N = {
+  de:{
+    brand:"Sind wir ein Match?",
+    startTitle:'Sind wir ein <span class="em">Match?</span>',
+    startLead:"Ehrlich antworten! Passt ihr genug zusammen, kriegst du eine Chance. Wenn nicht … na ja. 😏",
+    startBtn:"Los geht's 🚀",
+    next:"Weiter",
+    multiHint:"Mehrere möglich",
+    procMsgs:[
+      "Antworten werden verarbeitet …",
+      "Kompatibilität wird berechnet …",
+      "Die Vibes werden gescannt …",
+      "Ooh, das sieht interessant aus …",
+      "Hmm, eine Antwort war grenzwertig …",
+      "Mit einer Frage hast du dich fast ins Aus geschossen …",
+      "Das könnte tatsächlich was werden …",
+      "Spannung steigt …",
+      "Letzter Check läuft …"
+    ],
+    chooseTitle:"Wen willst du checken?",
+    chooseLead:"Wähle die Person, deren QR-Code du gescannt hast.",
+    counter:"Frage {a} von {b}",
+    matchTitle:'It\'s a <span class="em">Match!</span> 🎉',
+    matchLead:"{name} und du – das passt einfach. 😏",
+    igBtn:"{name} auf Instagram folgen",
+    igHint:"Trau dich und sprich mich an!",
+    noTitle:'Kein Match',
+    noMsgs:[
+      "Sorry sweetie, wir sind einfach nicht füreinander bestimmt.",
+      "Knapp daneben ist auch vorbei. Vielleicht beim nächsten Drink? 🍹",
+      "Die Vibes sagen: lieber Freunde. Oder nicht mal das. 😅",
+      "Schade – das Match-Universum sagt heute leider Nein.",
+      "So nah dran … und doch direkt in der Friendzone gelandet. 🫠",
+      "Nicht heute, Liebes. Aber hey, der Strand wartet ja. 🏖️",
+      "Es funkt leider nicht. Dafür funkt vielleicht die Bar nebenan. 🍹"
+    ],
+    yourMatch:"Dein Match: {p}%",
+    retry:"Nochmal versuchen",
+    madeBy:"Mit 🤍 gebaut von",
+    noqrTitle:"Kein QR-Code erkannt",
+    noqrLead:"Scanne den QR-Code, den du bekommen hast, um zu starten."
+  },
+  en:{
+    brand:"Are we a match?",
+    startTitle:'Are we a <span class="em">match?</span>',
+    startLead:"Answer honestly! If you two match enough, you get a shot. If not … oh well. 😏",
+    startBtn:"Let's go 🚀",
+    next:"Continue",
+    multiHint:"Multiple allowed",
+    procMsgs:[
+      "Processing your answers …",
+      "Calculating compatibility …",
+      "Scanning the vibes …",
+      "Ooh, this looks interesting …",
+      "Hmm, one answer was borderline …",
+      "That one question almost cost you …",
+      "This could actually work …",
+      "Suspense rising …",
+      "Running the final check …"
+    ],
+    chooseTitle:"Who are you checking?",
+    chooseLead:"Pick the person whose QR code you scanned.",
+    counter:"Question {a} of {b}",
+    matchTitle:'It\'s a <span class="em">Match!</span> 🎉',
+    matchLead:"You and {name} – this just works. 😏",
+    igBtn:"Follow {name} on Instagram",
+    igHint:"Go on, come say hi!",
+    noTitle:'No match',
+    noMsgs:[
+      "Sorry sweetie, we're just not meant to be.",
+      "So close! Maybe over the next drink? 🍹",
+      "The vibes say: better as friends. Or maybe not even that. 😅",
+      "Too bad – the match universe says no today.",
+      "So close … and yet straight into the friendzone. 🫠",
+      "Not today, darling. But hey, the beach is waiting. 🏖️",
+      "No spark here. Maybe at the bar next door though. 🍹"
+    ],
+    yourMatch:"Your match: {p}%",
+    retry:"Try again",
+    madeBy:"Built with 🤍 by",
+    noqrTitle:"No QR code detected",
+    noqrLead:"Scan the QR code you were given to start."
+  },
+  es:{
+    brand:"¿Hacemos match?",
+    startTitle:'¿Hacemos <span class="em">match?</span>',
+    startLead:"¡Responde con honestidad! Si encajáis lo suficiente, tienes una oportunidad. Si no … pues nada. 😏",
+    startBtn:"¡Vamos! 🚀",
+    next:"Continuar",
+    multiHint:"Varias posibles",
+    procMsgs:[
+      "Procesando tus respuestas …",
+      "Calculando compatibilidad …",
+      "Escaneando las vibras …",
+      "Ooh, esto pinta interesante …",
+      "Hmm, una respuesta estuvo al límite …",
+      "Esa pregunta casi te cuesta …",
+      "Esto podría funcionar de verdad …",
+      "Sube la tensión …",
+      "Última comprobación en marcha …"
+    ],
+    chooseTitle:"¿A quién quieres comprobar?",
+    chooseLead:"Elige a la persona cuyo código QR escaneaste.",
+    counter:"Pregunta {a} de {b}",
+    matchTitle:'¡Es un <span class="em">Match!</span> 🎉',
+    matchLead:"{name} y tú – esto encaja. 😏",
+    igBtn:"Seguir a {name} en Instagram",
+    igHint:"¡Atrévete y háblame!",
+    noTitle:'Sin match',
+    noMsgs:[
+      "Lo siento, cariño, no estamos hechos el uno para el otro.",
+      "¡Por poco! ¿Quizá en la próxima copa? 🍹",
+      "Las vibras dicen: mejor amigos. O ni eso. 😅",
+      "Qué pena – hoy el universo del match dice que no.",
+      "Tan cerca … y directos a la friendzone. 🫠",
+      "Hoy no, cariño. Pero oye, la playa te espera. 🏖️",
+      "No hay chispa. Quizá en el bar de al lado sí. 🍹"
+    ],
+    yourMatch:"Tu match: {p}%",
+    retry:"Intentar de nuevo",
+    madeBy:"Hecho con 🤍 por",
+    noqrTitle:"No se detectó código QR",
+    noqrLead:"Escanea el código QR que te dieron para empezar."
+  }
+};
+
+/* ===================================================================
+   3) APP-LOGIK
+   =================================================================== */
+let lang = (localStorage.getItem('lang')) || (navigator.language||'de').slice(0,2);
+if(!I18N[lang]) lang = 'de';
+
+const params = new URLSearchParams(location.search);
+const TEST = params.has('test');   // ?test=1 -> Personen-Auswahl + "Nochmal"-Button (nur fürs Testen)
+const slug = ALIASES[(params.get('p')||'').toLowerCase()] || null;
+const LOCK_KEY = 'qrush_done_' + (slug||'x');   // merkt sich, dass dieser Fragebogen schon ausgefüllt wurde
+let person = slug ? PEOPLE[slug] : null;
+
+let idx = 0;
+let answers = [];
+
+const $ = s => document.querySelector(s);
+const T = () => I18N[lang];
+
+function fill(text,obj){ return text.replace(/\{(\w+)\}/g,(_,k)=>obj[k]??''); }
+
+function applyStatic(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const key = el.getAttribute('data-i');
+    if(T()[key]!==undefined) el.innerHTML = T()[key];
+  });
+  document.querySelectorAll('#langs button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.lang===lang);
+  });
+  if(person){ $('#start-name').textContent = person.name; }
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
+  $(id).classList.add('show');
+}
+
+/* ---- Personen-Auswahl (Fallback ohne ?p=) ---- */
+function buildChooser(){
+  const list = $('#choose-list'); list.innerHTML='';
+  Object.entries(PEOPLE).forEach(([key,p])=>{
+    const b=document.createElement('button');
+    b.className='btn ghost';
+    b.textContent=p.name;
+    b.onclick=()=>{ person=p; idx=0; answers=[]; applyStatic(); startQuiz(); };
+    list.appendChild(b);
+  });
+}
+
+/* ---- Quiz ---- */
+let lastResult = null;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function startQuiz(){
+  idx=0; answers=[]; lastResult=null;
+  // Antwortreihenfolge pro Frage einmalig mischen (bleibt stabil bei Sprachwechsel)
+  person.q.forEach(q=>{ q._order = shuffle(q.o.map(o=>o[0])); });
+  renderQuestion(); show('#s-quiz');
+}
+
+function optById(q,id){ return q.o.find(o=>o[0]===id); }
+
+function renderQuestion(){
+  const q = person.q[idx];
+  const total = person.q.length;
+  if(!q._order) q._order = shuffle(q.o.map(o=>o[0]));
+  $('#bar').style.width = ((idx)/total*100)+'%';
+  $('#counter').textContent = fill(T().counter,{a:idx+1,b:total});
+
+  const sel = Array.isArray(answers[idx]) ? answers[idx] : (answers[idx]!=null?[answers[idx]]:[]);
+  const opts = q._order.map((id,i)=>{
+    const txt = optById(q,id)[1];
+    const letter = String.fromCharCode(65+i);   // Anzeige-Buchstabe nach Position
+    return `<button class="opt${sel.includes(id)?' sel':''}" data-id="${id}">
+      <span class="key">${letter}</span>
+      <span>${txt[lang]}</span>
+    </button>`;
+  }).join('');
+
+  $('#qmount').innerHTML = `
+    <div class="qcard" id="qcard">
+      <div class="q">${q.t[lang]}</div>
+      ${q.multi ? `<div class="multi-hint">${T().multiHint}</div>` : ``}
+      <div class="opts">${opts}</div>
+      ${q.multi ? `<div class="stack" style="margin-top:14px"><button class="btn ${sel.length?'':'disabled'}" id="nextBtn">${T().next}</button></div>` : ``}
+    </div>`;
+
+  $('#qmount').querySelectorAll('.opt').forEach(o=>{
+    o.onclick = ()=> q.multi ? toggleMulti(o.dataset.id, o) : choose(o.dataset.id, o);
+  });
+  if(q.multi){ const nb=$('#nextBtn'); if(nb) nb.onclick=advance; }
+}
+
+/* Einfachauswahl: ein Klick -> direkt weiter */
+function choose(id, el){
+  el.parentElement.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  answers[idx] = id;
+  const total = person.q.length;
+  $('#bar').style.width = ((idx+1)/total*100)+'%';
+  setTimeout(advance, 240);
+}
+
+/* Mehrfachauswahl: an-/abwählen, erst mit "Weiter" geht's weiter */
+function toggleMulti(id, el){
+  el.classList.toggle('sel');
+  const chosen = [...$('#qmount').querySelectorAll('.opt.sel')].map(x=>x.dataset.id);
+  answers[idx] = chosen;
+  const nb=$('#nextBtn');
+  if(nb) nb.classList.toggle('disabled', chosen.length===0);
+}
+
+function advance(){
+  if(idx < person.q.length-1){ idx++; renderQuestion(); }
+  else finish();
+}
+
+/* ---- Auswertung ---- */
+function scoreHit(q,a){
+  if(a==null) return false;
+  const picked = Array.isArray(a) ? a : [a];
+  return picked.some(id => q.correct.includes(id));   // mind. eine richtige zählt
+}
+
+function finish(){
+  let hits=0;
+  person.q.forEach((q,i)=>{ if(scoreHit(q, answers[i])) hits++; });
+  const pct = Math.round(hits/person.q.length*100);
+  const isMatch = (hits/person.q.length) >= person.threshold;
+  lastResult = {isMatch, pct};
+  if(!TEST && slug){ try{ localStorage.setItem(LOCK_KEY, JSON.stringify(lastResult)); }catch(e){} }
+  showProcessing(()=>{ renderResult(isMatch, pct); show('#s-result'); });
+}
+
+/* Spannungsaufbau: 3–8 s, zufällige Reihenfolge einblendender Texte */
+function showProcessing(done){
+  $('#bar').style.width = '100%';
+  show('#s-processing');
+  const pool = shuffle([...T().procMsgs]);
+  const total = 3000 + Math.random()*5000;           // 3–8 Sekunden
+  const count = Math.min(pool.length, 3 + Math.floor(Math.random()*3)); // 3–5 Texte
+  const step = total / count;
+  const el = $('#proc-text');
+  let i = 0;
+  (function tick(){
+    el.classList.remove('in'); void el.offsetWidth;
+    el.textContent = pool[i % pool.length];
+    el.classList.add('in');
+    i++;
+    if(i < count) setTimeout(tick, step);
+    else setTimeout(()=>{ el.classList.remove('in'); done(); }, step);
+  })();
+}
+
+/* offizielles Instagram-Glyph (weiß, auf dem IG-Gradient-Button) */
+const IG_ICON = `<svg class="ig-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <rect x="3" y="3" width="18" height="18" rx="5.4" stroke="white" stroke-width="2"/>
+  <circle cx="12" cy="12" r="4.2" stroke="white" stroke-width="2"/>
+  <circle cx="17.4" cy="6.6" r="1.25" fill="white"/></svg>`;
+
+function renderResult(isMatch, pct){
+  const r = $('#s-result');
+  const ring = `
+    <div class="score-ring">
+      <svg width="118" height="118" viewBox="0 0 118 118">
+        <circle cx="59" cy="59" r="52" fill="none" stroke="var(--line)" stroke-width="12"/>
+        <circle cx="59" cy="59" r="52" fill="none" stroke="${isMatch?'url(#g1)':'var(--ink-soft)'}"
+          stroke-width="12" stroke-linecap="round"
+          stroke-dasharray="${2*Math.PI*52}" stroke-dashoffset="${2*Math.PI*52*(1-pct/100)}"/>
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent2)"/>
+        </linearGradient></defs>
+      </svg>
+      <div class="val">${pct}%</div>
+    </div>`;
+
+  if(isMatch){
+    r.innerHTML = `
+      <div class="hero-emoji">💞</div>
+      <h1>${T().matchTitle}</h1>
+      ${ring}
+      <p class="lead">${fill(T().matchLead,{name:person.name})}</p>
+      <div class="stack" style="margin-top:4px">
+        <a class="btn ig" href="${person.instagram}" target="_blank" rel="noopener">${IG_ICON} ${fill(T().igBtn,{name:person.name})}</a>
+        <span class="ig-row">${fill(T().igHint,{name:person.name})}</span>
+      </div>`;
+    confetti();
+  } else {
+    const msg = T().noMsgs[Math.floor(Math.random()*T().noMsgs.length)];
+    r.innerHTML = `
+      <div class="hero-emoji">💔</div>
+      <h1>${T().noTitle}</h1>
+      ${ring}
+      <p class="lead">${msg}</p>
+      <p class="ig-row">${fill(T().yourMatch,{p:pct})}</p>
+      ${TEST ? `<div class="stack" style="margin-top:4px">
+        <button class="btn ghost" id="retry">${T().retry}</button>
+      </div>` : ``}`;
+    const rt = $('#retry'); if(rt) rt.onclick = startQuiz;
+  }
+}
+
+/* ---- Confetti (ohne Library) ---- */
+function confetti(){
+  const box=$('#confetti'); const colors=['#FF5864','#FF8A5B','#FFD166','#19C37D','#5B8DEF','#C45BEF'];
+  for(let i=0;i<90;i++){
+    const c=document.createElement('div'); c.className='conf';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[i%colors.length];
+    c.style.animationDuration=(2.4+Math.random()*1.8)+'s';
+    c.style.animationDelay=(Math.random()*.5)+'s';
+    c.style.transform=`translateY(0) rotate(${Math.random()*360}deg)`;
+    if(Math.random()>.6) c.style.borderRadius='50%';
+    box.appendChild(c);
+  }
+  setTimeout(()=>{box.innerHTML='';}, 4800);
+}
+
+/* ---- Sprache wechseln ---- */
+document.querySelectorAll('#langs button').forEach(b=>{
+  b.onclick=()=>{
+    lang=b.dataset.lang; localStorage.setItem('lang',lang);
+    applyStatic();
+    // aktuellen Screen neu rendern
+    if($('#s-quiz').classList.contains('show')) renderQuestion();
+    else if($('#s-result').classList.contains('show')){ if(lastResult) renderResult(lastResult.isMatch,lastResult.pct); }
+    else if($('#s-choose').classList.contains('show')) buildChooser();
+  };
+});
+
+/* ---- Init ---- */
+applyStatic();
+if(person){
+  // Reload-Schutz: wurde der Fragebogen schon ausgefüllt, direkt Ergebnis zeigen (nicht im Testmodus)
+  let saved = null;
+  if(!TEST){ try{ saved = JSON.parse(localStorage.getItem(LOCK_KEY)); }catch(e){} }
+  if(saved && typeof saved.pct==='number'){
+    lastResult = saved;
+    renderResult(saved.isMatch, saved.pct);
+    show('#s-result');
+  }else{
+    $('#go').onclick = startQuiz;
+    show('#s-start');
+  }
+}else if(TEST){
+  buildChooser();
+  show('#s-choose');
+}else{
+  show('#s-noqr');
+}
+</script>
+</body>
+</html>
